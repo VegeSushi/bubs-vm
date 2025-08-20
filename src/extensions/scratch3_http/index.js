@@ -6,12 +6,13 @@ const fetch = require('node-fetch');
 class Scratch3Http {
     constructor (runtime) {
         this.runtime = runtime;
+		this._lastStatusCode = null;
     }
 
     getInfo () {
         return {
             id: 'http',
-            name: 'Blocks allowing HTTP requests',
+            name: 'HTTP',
             color1: '#FF4C4C',
             color2: '#CC3C3C',
             color3: '#992C2C',
@@ -25,6 +26,11 @@ class Scratch3Http {
                             defaultValue: "https://api.chucknorris.io/jokes/random"
                         }
                     }
+                },
+				{
+                    opcode: 'getLastStatusCode',
+                    blockType: BlockType.REPORTER,
+                    text: 'last HTTP status code'
                 }
             ],
             menus: {
@@ -36,6 +42,7 @@ class Scratch3Http {
         const url = Cast.toString(args.URL);
         try {
             const response = await fetch(url);
+			this._lastStatusCode = response.status;
 
             if (!response.ok) {
                 return `HTTP Error ${response.status}: ${response.statusText}`;
@@ -46,6 +53,10 @@ class Scratch3Http {
         } catch (e) {
             return `Network Error: ${e.message}`;
         }
+    }
+	
+	getLastStatusCode() {
+        return this._lastStatusCode;
     }
 }
 

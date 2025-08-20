@@ -10,7 +10,7 @@ class Scratch3Json {
     getInfo() {
         return {
             id: 'json',
-            name: 'JSON Parser',
+            name: 'JSON',
             color1: '#FF9933',
             color2: '#CC7A29',
             color3: '#995C1F',
