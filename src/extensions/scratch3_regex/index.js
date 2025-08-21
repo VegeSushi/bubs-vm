@@ -11,9 +11,9 @@ class Scratch3Regex {
         return {
             id: 'regex',
             name: 'Regex',
-            color1: '#FF9933',
-            color2: '#CC7A29',
-            color3: '#995C1F',
+            color1: '#9B59B6',
+			color2: '#884EA0',
+			color3: '#76448A',
             blocks: [
                 {
                     opcode: 'matchRegex',
