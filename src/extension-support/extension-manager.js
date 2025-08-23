@@ -27,7 +27,8 @@ const builtinExtensions = {
     http: () => require('../extensions/scratch3_http'),
     json: () => require('../extensions/scratch3_json'),
     regex: () => require('../extensions/scratch3_regex'),
-    cookies: () => require('../extensions/scratch3_cookies')
+    cookies: () => require('../extensions/scratch3_cookies'),
+    controller: () => require('../extensions/scratch3_controller')
 };
 
 /**
