@@ -48,9 +48,9 @@ class Scratch3WebSocket {
                 },
                 {
                     opcode: 'whenMessageReceived',
-                    blockType: BlockType.HAT,
-                    text: 'when message received',
-                    isEdgeActivated: false // Triggered manually
+                    // CHANGED TO EVENT: This stops Scratch from constantly polling it.
+                    blockType: BlockType.EVENT, 
+                    text: 'when message received'
                 },
                 {
                     opcode: 'getLastMessage',
@@ -72,11 +72,11 @@ class Scratch3WebSocket {
     }
 
     /**
-     * Missing function added here! 
-     * Scratch requires this to exist for the Hat block, even if manually triggered.
+     * Because this is an EVENT block, it is only called when we trigger it.
+     * Returning true allows the script attached to the Hat block to run!
      */
     whenMessageReceived() {
-        return false;
+        return true;
     }
 
     /**
@@ -103,7 +103,7 @@ class Scratch3WebSocket {
 
             this.ws.onmessage = (event) => {
                 this.lastMessage = event.data;
-                // Force Scratch to trigger the "when message received" hat block
+                // Force Scratch to trigger the "when message received" EVENT block
                 this.runtime.startHats('websocket_whenMessageReceived');
             };
 
