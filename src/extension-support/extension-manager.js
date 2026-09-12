@@ -30,7 +30,8 @@ const builtinExtensions = {
     cookies: () => require('../extensions/scratch3_cookies'),
     controller: () => require('../extensions/scratch3_controller'),
     clipboard: () => require('../extensions/scratch3_clipboard'),
-    notifications: () => require('../extensions/scratch3_notifications')
+    notifications: () => require('../extensions/scratch3_notifications'),
+    websockets: () => require('../extensions/scratch3_websockets')
 };
 
 /**
