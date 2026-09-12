@@ -9,9 +9,6 @@ class Scratch3WebSocket {
         this.lastMessage = '';
         this.connectionState = 'disconnected'; 
         this.lastError = '';
-        
-        // This counter ensures every single message triggers the Hat block exactly once
-        this._unhandledMessages = 0; 
     }
 
     getInfo() {
@@ -50,12 +47,6 @@ class Scratch3WebSocket {
                     }
                 },
                 {
-                    opcode: 'whenMessageReceived',
-                    blockType: BlockType.HAT,
-                    text: 'when message received',
-                    isEdgeActivated: false // We manage the activation manually with our counter
-                },
-                {
                     opcode: 'getLastMessage',
                     blockType: BlockType.REPORTER,
                     text: 'last received message'
@@ -74,18 +65,6 @@ class Scratch3WebSocket {
         };
     }
 
-    /**
-     * Scratch polls this function 30 times a second.
-     * If there is an unhandled message in the queue, we trigger the block and subtract 1.
-     */
-    whenMessageReceived() {
-        if (this._unhandledMessages > 0) {
-            this._unhandledMessages--;
-            return true;
-        }
-        return false;
-    }
-
     connectToServer(args) {
         const url = Cast.toString(args.URL);
 
@@ -94,7 +73,7 @@ class Scratch3WebSocket {
         }
 
         this.connectionState = 'connecting';
-        this._unhandledMessages = 0; // Reset queue on new connection
+        this.lastMessage = ''; // Clear previous messages on new connection
 
         try {
             this.ws = new WebSocket(url);
@@ -107,8 +86,6 @@ class Scratch3WebSocket {
 
             this.ws.onmessage = (event) => {
                 this.lastMessage = event.data;
-                // Add to the queue. Scratch will catch this on its next tick!
-                this._unhandledMessages++; 
             };
 
             this.ws.onclose = () => {
@@ -135,7 +112,6 @@ class Scratch3WebSocket {
             this.ws.close();
             this.ws = null;
             this.connectionState = 'disconnected';
-            this._unhandledMessages = 0;
         }
     }
 
