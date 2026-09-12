@@ -7,15 +7,18 @@ class Scratch3WebSocket {
         this.runtime = runtime;
         this.ws = null;
         this.lastMessage = '';
-        this.connectionState = 'disconnected'; // 'disconnected', 'connecting', 'connected'
+        this.connectionState = 'disconnected'; 
         this.lastError = '';
+        
+        // This is our secret weapon to prevent Hat spamming
+        this._isHandlingMessage = false; 
     }
 
     getInfo() {
         return {
             id: 'websocket',
             name: 'WebSocket',
-            color1: '#00C7B5', // Cyan/Teal
+            color1: '#00C7B5', 
             color2: '#00A395',
             color3: '#007A6F',
             blocks: [
@@ -48,9 +51,9 @@ class Scratch3WebSocket {
                 },
                 {
                     opcode: 'whenMessageReceived',
-                    // CHANGED TO EVENT: This stops Scratch from constantly polling it.
-                    blockType: BlockType.EVENT, 
-                    text: 'when message received'
+                    blockType: BlockType.HAT,
+                    text: 'when message received',
+                    isEdgeActivated: false
                 },
                 {
                     opcode: 'getLastMessage',
@@ -72,20 +75,17 @@ class Scratch3WebSocket {
     }
 
     /**
-     * Because this is an EVENT block, it is only called when we trigger it.
-     * Returning true allows the script attached to the Hat block to run!
+     * Hat Block logic:
+     * Scratch will poll this 30 times a second. It will only return true 
+     * during the exact fraction of a millisecond that a message is being processed!
      */
     whenMessageReceived() {
-        return true;
+        return this._isHandlingMessage;
     }
 
-    /**
-     * Command: Connects to a WebSocket server
-     */
     connectToServer(args) {
         const url = Cast.toString(args.URL);
 
-        // Close existing connection if there is one
         if (this.ws) {
             this.ws.close();
         }
@@ -103,8 +103,15 @@ class Scratch3WebSocket {
 
             this.ws.onmessage = (event) => {
                 this.lastMessage = event.data;
-                // Force Scratch to trigger the "when message received" EVENT block
+                
+                // 1. Turn the flag ON
+                this._isHandlingMessage = true;
+                
+                // 2. Force Scratch to evaluate the Hat block (it will see "true" and fire!)
                 this.runtime.startHats('websocket_whenMessageReceived');
+                
+                // 3. Immediately turn it OFF so it doesn't spam on the next frame
+                this._isHandlingMessage = false;
             };
 
             this.ws.onclose = () => {
@@ -126,9 +133,6 @@ class Scratch3WebSocket {
         }
     }
 
-    /**
-     * Command: Disconnects from the current server
-     */
     disconnect() {
         if (this.ws) {
             this.ws.close();
@@ -137,9 +141,6 @@ class Scratch3WebSocket {
         }
     }
 
-    /**
-     * Command: Sends a string message to the server
-     */
     sendData(args) {
         const data = Cast.toString(args.DATA);
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -149,23 +150,14 @@ class Scratch3WebSocket {
         }
     }
 
-    /**
-     * Reporter: Gets the most recent message received
-     */
     getLastMessage() {
         return this.lastMessage;
     }
 
-    /**
-     * Boolean: Returns true if the WebSocket is currently open and active
-     */
     isConnected() {
         return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
     }
 
-    /**
-     * Reporter: Returns 'connected', 'connecting', or 'disconnected'
-     */
     getConnectionState() {
         return this.connectionState;
     }
