@@ -26,7 +26,7 @@ class Scratch3WebSocket {
                     arguments: {
                         URL: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'wss://echo.websocket.events'
+                            defaultValue: 'wss://echo.websocket.org'
                         }
                     }
                 },
@@ -50,7 +50,7 @@ class Scratch3WebSocket {
                     opcode: 'whenMessageReceived',
                     blockType: BlockType.HAT,
                     text: 'when message received',
-                    isEdgeActivated: false // We trigger this manually using startHats
+                    isEdgeActivated: false // Triggered manually
                 },
                 {
                     opcode: 'getLastMessage',
@@ -69,6 +69,14 @@ class Scratch3WebSocket {
                 }
             ]
         };
+    }
+
+    /**
+     * Missing function added here! 
+     * Scratch requires this to exist for the Hat block, even if manually triggered.
+     */
+    whenMessageReceived() {
+        return false;
     }
 
     /**
@@ -95,7 +103,7 @@ class Scratch3WebSocket {
 
             this.ws.onmessage = (event) => {
                 this.lastMessage = event.data;
-                // Force Scratch to trigger the "when message received" hat block!
+                // Force Scratch to trigger the "when message received" hat block
                 this.runtime.startHats('websocket_whenMessageReceived');
             };
 
