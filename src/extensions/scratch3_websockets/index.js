@@ -10,8 +10,8 @@ class Scratch3WebSocket {
         this.connectionState = 'disconnected'; 
         this.lastError = '';
         
-        // This is our secret weapon to prevent Hat spamming
-        this._isHandlingMessage = false; 
+        // This counter ensures every single message triggers the Hat block exactly once
+        this._unhandledMessages = 0; 
     }
 
     getInfo() {
@@ -53,7 +53,7 @@ class Scratch3WebSocket {
                     opcode: 'whenMessageReceived',
                     blockType: BlockType.HAT,
                     text: 'when message received',
-                    isEdgeActivated: false
+                    isEdgeActivated: false // We manage the activation manually with our counter
                 },
                 {
                     opcode: 'getLastMessage',
@@ -75,12 +75,15 @@ class Scratch3WebSocket {
     }
 
     /**
-     * Hat Block logic:
-     * Scratch will poll this 30 times a second. It will only return true 
-     * during the exact fraction of a millisecond that a message is being processed!
+     * Scratch polls this function 30 times a second.
+     * If there is an unhandled message in the queue, we trigger the block and subtract 1.
      */
     whenMessageReceived() {
-        return this._isHandlingMessage;
+        if (this._unhandledMessages > 0) {
+            this._unhandledMessages--;
+            return true;
+        }
+        return false;
     }
 
     connectToServer(args) {
@@ -91,6 +94,7 @@ class Scratch3WebSocket {
         }
 
         this.connectionState = 'connecting';
+        this._unhandledMessages = 0; // Reset queue on new connection
 
         try {
             this.ws = new WebSocket(url);
@@ -103,15 +107,8 @@ class Scratch3WebSocket {
 
             this.ws.onmessage = (event) => {
                 this.lastMessage = event.data;
-                
-                // 1. Turn the flag ON
-                this._isHandlingMessage = true;
-                
-                // 2. Force Scratch to evaluate the Hat block (it will see "true" and fire!)
-                this.runtime.startHats('websocket_whenMessageReceived');
-                
-                // 3. Immediately turn it OFF so it doesn't spam on the next frame
-                this._isHandlingMessage = false;
+                // Add to the queue. Scratch will catch this on its next tick!
+                this._unhandledMessages++; 
             };
 
             this.ws.onclose = () => {
@@ -138,6 +135,7 @@ class Scratch3WebSocket {
             this.ws.close();
             this.ws = null;
             this.connectionState = 'disconnected';
+            this._unhandledMessages = 0;
         }
     }
 
