@@ -31,7 +31,10 @@ const builtinExtensions = {
     controller: () => require('../extensions/scratch3_controller'),
     clipboard: () => require('../extensions/scratch3_clipboard'),
     notifications: () => require('../extensions/scratch3_notifications'),
-    websockets: () => require('../extensions/scratch3_websockets')
+    websockets: () => require('../extensions/scratch3_websockets'),
+    html: () => require('../extensions/scratch3_html'),
+    hashing: () => require('../extensions/scratch3_hashing'),
+    metadata: () => require('../extensions/scratch3_metadata')
 };
 
 /**
